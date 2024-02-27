@@ -136,6 +136,7 @@ async def plot_data(data, title, x_label, y_label, file_name):
     plt.grid(True)
 
     plt.savefig(file_name)
+    plt.close()
 
     with open(file_name, 'rb') as image_file:
         return nextcord.File(image_file)
@@ -151,6 +152,7 @@ async def plot_data_multiple(data, title, x_label, y_label, file_name):
     plt.grid(True)
 
     plt.savefig(file_name)
+    plt.close()
 
     with open(file_name, 'rb') as image_file:
         return nextcord.File(image_file)
