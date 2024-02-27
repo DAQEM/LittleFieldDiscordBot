@@ -10,7 +10,7 @@ intents.members = True
 
 lf = Littlefield(config.TEAM_NAME, config.TEAM_PASSWORD, config.INSTITUTION)
 lf_day = lf.live_day()
-lf_prev_cash = lf.live_cash()
+lf_prev_cash = int(lf.live_cash())
 lf_cash_notif = None
 
 bot = commands.Bot(command_prefix='/', intents=intents)
@@ -23,7 +23,9 @@ async def on_ready():
 
 @tasks.loop(seconds=20)
 async def update_rich_presence():
-    cash = lf.live_cash()
+    cash = int(lf.live_cash())
+    global lf_prev_cash
+    lf_prev_cash = cash
     await bot.change_presence(activity=nextcord.Game(name="Updating..."))
     await bot.change_presence(activity=nextcord.Game(name=f"Cash: {cash}"))
     global lf_cash_notif
