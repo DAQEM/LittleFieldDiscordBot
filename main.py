@@ -10,8 +10,8 @@ intents.members = True
 
 lf = Littlefield(config.TEAM_NAME, config.TEAM_PASSWORD, config.INSTITUTION)
 lf_day = lf.live_day()
-lf_prev_cash = int(lf.live_cash())
-lf_cash_notif = None
+lf_prev_cash: int = int(lf.live_cash())
+lf_cash_notif: int = 0
 
 bot = commands.Bot(command_prefix='/', intents=intents)
 
@@ -25,15 +25,16 @@ async def on_ready():
 async def update_rich_presence():
     cash = int(lf.live_cash())
     global lf_prev_cash
-    lf_prev_cash = cash
+    global lf_cash_notif
     await bot.change_presence(activity=nextcord.Game(name="Updating..."))
     await bot.change_presence(activity=nextcord.Game(name=f"Cash: {cash}"))
-    global lf_cash_notif
-    if lf_cash_notif is not None:
+    if lf_cash_notif > 0:
         if cash > lf_cash_notif:
             if lf_prev_cash < lf_cash_notif:
                 channel = bot.get_channel(config.CHANNEL_ID)
                 await channel.send(f"Cash point reached: ${cash}!")
+    
+    lf_prev_cash = cash
 
 
 @tasks.loop(seconds=20)
