@@ -10,6 +10,8 @@ intents.members = True
 
 lf = Littlefield(config.TEAM_NAME, config.TEAM_PASSWORD, config.INSTITUTION)
 lf_day = lf.live_day()
+lf_prev_cash = lf.live_cash()
+lf_cash_notif = None
 
 bot = commands.Bot(command_prefix='/', intents=intents)
 
@@ -21,8 +23,15 @@ async def on_ready():
 
 @tasks.loop(seconds=20)
 async def update_rich_presence():
+    cash = lf.live_cash()
     await bot.change_presence(activity=nextcord.Game(name="Updating..."))
-    await bot.change_presence(activity=nextcord.Game(name=f"Cash: {lf.live_cash()}"))
+    await bot.change_presence(activity=nextcord.Game(name=f"Cash: {cash}"))
+    global lf_cash_notif
+    if lf_cash_notif is not None:
+        if cash > lf_cash_notif:
+            if lf_prev_cash < lf_cash_notif:
+                channel = bot.get_channel(config.CHANNEL_ID)
+                await channel.send(f"Cash point reached: ${cash}!")
 
 
 @tasks.loop(seconds=20)
@@ -37,6 +46,14 @@ async def check_for_new_day():
 async def ping(ctx):
     print(ctx)
 
+@bot.slash_command(guild_ids=[config.GUILD_ID])
+async def set_cash_notification(
+    interaction: Interaction,
+    cash: int = SlashOption(name="cash", description="The cash amount", required=True)
+):
+    global lf_cash_notif
+    lf_cash_notif = cash
+    await interaction.response.send_message(f"Notification point set to ${cash}!")
 
 @bot.slash_command(guild_ids=[config.GUILD_ID])
 async def cash(
